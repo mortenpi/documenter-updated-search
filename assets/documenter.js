@@ -13,6 +13,7 @@ requirejs.config({
     highlight: 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min',
     'highlight-julia-repl':
       'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/julia-repl.min',
+    lunr: 'https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.9/lunr.min',
   },
   shim: {
     'highlight-julia': {
@@ -207,26 +208,432 @@ require(['jquery'], function ($) {
   })
 })
 ////////////////////////////////////////////////////////////////////////////////
+
 require([], function () {
-  let searchbox = document.querySelector('#documenter-search-query')
-  let sidebar = document.querySelector('.docs-sidebar')
+  // let searchbox = document.querySelector('#documenter-search-query')
+  // let sidebar = document.querySelector('.docs-sidebar')
+  // document.addEventListener('keydown', (event) => {
+  //   if ((event.ctrlKey || event.metaKey) && event.key === '/') {
+  //     if (!sidebar.classList.contains('visible')) {
+  //       sidebar.classList.add('visible')
+  //     }
+  //     searchbox.focus()
+  //     return false
+  //   } else if (event.key === 'Escape') {
+  //     if (sidebar.classList.contains('visible')) {
+  //       sidebar.classList.remove('visible')
+  //     }
+  //     searchbox.blur()
+  //     return false
+  //   }
+  // })
+})
+
+////////////////////////////////////////////////////////////////////////////////
+
+require(['jquery'], function ($) {
+  $(document.body).append(
+    `
+      <div class="modal" id="search-modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <div class="field" style="width: 100%">
+              <p class="control has-icons-right">
+                <input class="input documenter-search-input" type="text" placeholder="Search" />
+                <span class="icon is-small is-right has-text-primary-dark">
+                  <i class="fas fa-magnifying-glass"></i>
+                </span>
+              </p>
+            </div>
+          </header>
+          <section class="modal-card-body">
+            <div class="search-result-container">
+              <div class="has-text-centered m-5 p-5">No recent searches</div>
+            </div>
+          </section>
+          <footer class="modal-card-foot">
+            <span>
+              <kbd class="search-modal">Ctrl</kbd> + <kbd class="search-modal">/</kbd> to search
+            </span>
+            <span class="mx-3"> <kbd class="search-modal">&#9166;</kbd> to select </span>
+            <span> <kbd class="search-modal">esc</kbd> to close </span>
+          </footer>
+        </div>
+      </div>
+    `
+  )
+
+  document.querySelector('.docs-search-query').addEventListener('click', () => {
+    openModal()
+  })
 
   document.addEventListener('keydown', (event) => {
     if ((event.ctrlKey || event.metaKey) && event.key === '/') {
-      if (!sidebar.classList.contains('visible')) {
-        sidebar.classList.add('visible')
-      }
-      searchbox.focus()
-      return false
+      openModal()
     } else if (event.key === 'Escape') {
-      if (sidebar.classList.contains('visible')) {
-        sidebar.classList.remove('visible')
+      closeModal()
+    }
+
+    return false
+  })
+
+  // Functions to open and close a modal
+  function openModal() {
+    let searchModal = document.querySelector('#search-modal')
+
+    searchModal.classList.add('is-active')
+    document.querySelector('.documenter-search-input').focus()
+  }
+
+  function closeModal() {
+    let searchModal = document.querySelector('#search-modal')
+
+    searchModal.classList.remove('is-active')
+    document.querySelector('.documenter-search-input').blur()
+
+    $('.documenter-search-input').val('')
+    $('.search-result-container').html(
+      `<div class="has-text-centered m-5 p-5">No recent searches</div>`
+    )
+  }
+
+  document.querySelector('#search-modal .modal-background').addEventListener('click', () => {
+    closeModal()
+  })
+})
+
+// Create singleton Lunr instance
+class SearchIndex {
+  static instance
+
+  static createInstance(lunr) {
+    if (this.instance) {
+      return this.instance
+    }
+
+    try {
+      lunr.stopWordFilter = lunr.generateStopWordFilter([
+        'a',
+        'able',
+        'about',
+        'across',
+        'after',
+        'almost',
+        'also',
+        'am',
+        'among',
+        'an',
+        'and',
+        'are',
+        'as',
+        'at',
+        'be',
+        'because',
+        'been',
+        'but',
+        'by',
+        'can',
+        'cannot',
+        'could',
+        'dear',
+        'did',
+        'does',
+        'either',
+        'ever',
+        'every',
+        'from',
+        'got',
+        'had',
+        'has',
+        'have',
+        'he',
+        'her',
+        'hers',
+        'him',
+        'his',
+        'how',
+        'however',
+        'i',
+        'if',
+        'into',
+        'it',
+        'its',
+        'just',
+        'least',
+        'like',
+        'likely',
+        'may',
+        'me',
+        'might',
+        'most',
+        'must',
+        'my',
+        'neither',
+        'no',
+        'nor',
+        'not',
+        'of',
+        'off',
+        'often',
+        'on',
+        'or',
+        'other',
+        'our',
+        'own',
+        'rather',
+        'said',
+        'say',
+        'says',
+        'she',
+        'should',
+        'since',
+        'so',
+        'some',
+        'than',
+        'that',
+        'the',
+        'their',
+        'them',
+        'then',
+        'there',
+        'these',
+        'they',
+        'this',
+        'tis',
+        'to',
+        'too',
+        'twas',
+        'us',
+        'wants',
+        'was',
+        'we',
+        'were',
+        'what',
+        'when',
+        'who',
+        'whom',
+        'why',
+        'will',
+        'would',
+        'yet',
+        'you',
+        'your',
+      ])
+
+      lunr.tokenizer.separator = /[\s\-\.]+/
+
+      lunr.trimmer = function (token) {
+        return token.update(function (s) {
+          return s.replace(/^[^a-zA-Z0-9@!]+/, '').replace(/[^a-zA-Z0-9@!]+$/, '')
+        })
       }
-      searchbox.blur()
-      return false
+
+      lunr.Pipeline.registerFunction(lunr.stopWordFilter, 'juliaStopWordFilter')
+      lunr.Pipeline.registerFunction(lunr.trimmer, 'juliaTrimmer')
+
+      this.instance = lunr(function () {
+        this.ref('location')
+        this.field('title', { boost: 100 })
+        this.field('text')
+        documenterSearchIndex['docs'].forEach(function (e) {
+          this.add(e)
+        }, this)
+      })
+
+      console.log('Lunr instance created successfully.')
+    } catch (error) {
+      console.error('Unable to create Lunr instance:', error)
+    }
+
+    return this.instance
+  }
+
+  static async getDocumenterSearchIndexDocs() {
+    try {
+      const response = await fetch('/assets/data.json')
+      const json = await response.json()
+      return json
+    } catch (error) {
+      console.error(error)
+    }
+  }
+}
+
+// Create singleton Lunr instance
+class PreSearchIndex {
+  static instance
+
+  static async createInstance(lunr) {
+    if (this.instance) {
+      return this.instance
+    }
+
+    try {
+      const response = await fetch('/assets/search_index.json')
+      const json = await response.json()
+      this.instance = lunr.Index.load(json)
+
+      console.log('Lunr instance created successfully from Pre-built index.')
+    } catch (error) {
+      console.error('Unable to create Lunr instance:', error)
+    }
+
+    return this.instance
+  }
+
+  static async getDocumenterSearchIndexDocs() {
+    try {
+      const response = await fetch('/assets/data.json')
+      const json = await response.json()
+      return json
+    } catch (error) {
+      console.error(error)
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+require(['jquery', 'lunr'], function ($, lunr) {
+  $(async function () {
+    let timer = undefined
+    let results = undefined
+
+    // console.time('without_prebuilt_index')
+    // var index = SearchIndex.createInstance(lunr)
+    // console.timeEnd('without_prebuilt_index')
+
+    // var documenterSearchIndexDocs = await SearchIndex.getDocumenterSearchIndexDocs()
+
+    // console.log('')
+    // console.log('')
+
+    // console.time('with_prebuilt_index')
+    var index = await PreSearchIndex.createInstance(lunr)
+    // console.timeEnd('with_prebuilt_index')
+
+    var documenterSearchIndexDocs = await PreSearchIndex.getDocumenterSearchIndexDocs()
+
+    $(document).on('keyup', '.documenter-search-input', function () {
+      debounce(300)
+    })
+
+    function debounce(timeout = 300) {
+      clearTimeout(timer)
+      timer = setTimeout(update_search($('.documenter-search-input').val()), timeout)
+    }
+
+    function update_search(querystring) {
+      if (querystring.trim()) {
+        tokens = lunr.tokenizer(querystring)
+        results = index.query(function (q) {
+          tokens.forEach(function (t) {
+            q.term(t.toString(), {
+              fields: ['title'],
+              boost: 100,
+              usePipeline: true,
+              editDistance: 0,
+              wildcard: lunr.Query.wildcard.NONE,
+            })
+            q.term(t.toString(), {
+              fields: ['title'],
+              boost: 10,
+              usePipeline: true,
+              editDistance: 2,
+              wildcard: lunr.Query.wildcard.NONE,
+            })
+            q.term(t.toString(), {
+              fields: ['text'],
+              boost: 1,
+              usePipeline: true,
+              editDistance: 0,
+              wildcard: lunr.Query.wildcard.NONE,
+            })
+          })
+        })
+
+        if (results.length) {
+          results = results.filter((x) => x.score > 5)
+
+          let data = undefined
+          let searchData = results.map(function (result) {
+            data = documenterSearchIndexDocs.find((ele) => ele.location === result.ref)
+
+            let textindex = new RegExp(`\\b${querystring}\\b`, 'i').exec(data.text)
+            let text =
+              textindex !== null
+                ? data.text.slice(
+                    Math.max(textindex.index - 100, 0),
+                    Math.min(textindex.index + querystring.length + 100, data.text.length)
+                  )
+                : ''
+
+            return {
+              location: result.ref,
+              title: data.title,
+              text: text.length
+                ? '...' +
+                  text.replace(
+                    // new RegExp(`\\b${querystring}\\b`, 'gi'), // For all occurences
+                    new RegExp(`\\b${querystring}\\b`, 'i'), // For first occurence
+                    '<span class="search-result-highlight">$&</span>'
+                  ) +
+                  '...'
+                : '',
+              category: data.category,
+            }
+          })
+
+          let newSearchData = {}
+
+          // Start from group by category
+          searchData.forEach((element) => {
+            if (newSearchData.hasOwnProperty(element.category)) {
+              newSearchData[element.category].push(element)
+            } else {
+              newSearchData[element.category] = [element]
+            }
+          })
+
+          let searchString = ''
+
+          Object.keys(newSearchData).forEach((type) => {
+            searchString += `<div>`
+            searchString += `<p class="is-size-5">${
+              type.charAt(0).toUpperCase() + type.slice(1)
+            }</p>`
+            let colorArr = ['info', 'primary', 'link', 'success', 'warning', 'danger']
+            let color = colorArr[Math.floor(Math.random() * colorArr.length)]
+            newSearchData[type].forEach((obj) => {
+              searchString += `
+                <a href="${obj.location}" class="is-link">
+                  <div class="pl-4">
+                    <h6 class="search-modal-badge has-background-${color}">${obj.title}</h6>
+                      <p class="m-2 pl-2 search-result-text-para">
+                        ${obj.text}
+                      </p>
+                    </div>
+                </a>
+              `
+            })
+            searchString += `</div>`
+          })
+
+          $('.search-result-container').html(searchString)
+        } else {
+          $('.search-result-container').html(
+            `<div class="has-text-centered m-5 p-5">No recent searches</div>`
+          )
+        }
+      } else {
+        $('.search-result-container').html(
+          `<div class="has-text-centered m-5 p-5">No recent searches</div>`
+        )
+      }
     }
   })
 })
+
 ////////////////////////////////////////////////////////////////////////////////
 require(['jquery'], function ($) {
   // Manages the showing and hiding of the sidebar.
