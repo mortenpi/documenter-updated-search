@@ -17,23 +17,26 @@
           <h5 class="text-center">MinisearchJs</h5>
           <div class="stats">
             <div>
-              Time to instantiate using pre-built indexes:
-              <span class="ms-index-time"></span>
+              Time to instantiate using pre-built indexes (Using performance.now()):
+              <span class="ms-index-time-performance"></span>
             </div>
-            <div>Size of minisearch serialised index: <span class="ms-index-size"></span></div>
-            <input type="text" name="ms_input" id="ms_input" />
-            <br />
-            <br />
-            <small>
+            <div>
+              Time to instantiate using pre-built indexes (Using timestamps):
+              <span class="ms-index-time-timestamps"></span>
+            </div>
+            <div>
+              Size of minisearch serialised index (Transferred over network):
+              <span class="ms-index-size"></span>
+            </div>
+            <input type="text" name="ms_input" class="w-100 mt-4" id="ms_input" />
+            <small class="mt-4">
               Minisearch returns good result object when compared to lunr, it returns the text
               field, category and much more. For our purposes we will only print the location field.
             </small>
-            <br />
-            <br />
-            <small>For the raw result Object see in "Console" in your Browser Devtools.</small>
-            <br />
-            <br />
-            <h4>
+            <small class="mt-4">
+              For the raw result Object see in "Console" in your Browser Devtools.
+            </small>
+            <h4 class="mt-4">
               Search results: <span><b class="ms-result-count">0</b></span>
             </h4>
             <div>
@@ -44,23 +47,26 @@
         <div class="col-6">
           <h5 class="text-center">LunrJs</h5>
           <div>
-            Time to instantiate using pre-built indexes:
-            <span class="lunr-index-time"></span>
+            Time to instantiate using pre-built indexes (Using performance.now()):
+            <span class="lunr-index-time-performance"></span>
           </div>
-          <div>Size of lunr serialised index: <span class="lunr-index-size"></span></div>
-          <input type="text" name="lunr_input" id="lunr_input" />
-          <br />
-          <br />
-          <small>
+          <div>
+            Time to instantiate using pre-built indexes (Using timestamps):
+            <span class="lunr-index-time-timestamps"></span>
+          </div>
+          <div>
+            Size of lunr serialised index (Transferred over network):
+            <span class="lunr-index-size"></span>
+          </div>
+          <input type="text" name="lunr_input" class="w-100 mt-4" id="lunr_input" />
+          <small class="mt-4">
             As per the current configuration of documenter; Lunr doesn't give much info as to where
             our search matched. For our purposes we will only print the ref field.
           </small>
-          <br />
-          <br />
-          <small>For the raw result Object see in "Console" in your Browser Devtools.</small>
-          <br />
-          <br />
-          <h4>
+          <small class="mt-4">
+            For the raw result Object see in "Console" in your Browser Devtools.
+          </small>
+          <h4 class="mt-4">
             Search results: <span><b class="lunr-result-count">0</b></span>
           </h4>
           <div>
@@ -284,15 +290,22 @@
       })
 
       const t0 = performance.now()
+      const lunr_start = new Date().valueOf()
       var index = await PreSearchIndex.createInstance(lunr)
+      const lunr_end = new Date().valueOf()
       const t1 = performance.now()
 
       const t2 = performance.now()
+      const ms_start = new Date().valueOf()
       var index_ms = await PreSearchIndexMS.createInstance(MiniSearch)
+      const ms_end = new Date().valueOf()
       const t3 = performance.now()
 
-      $('.lunr-index-time').html(`<b>${t1 - t0} milliseconds</b>`)
-      $('.ms-index-time').html(`<b>${t3 - t2} milliseconds</b>`)
+      $('.lunr-index-time-performance').html(`<b>${t1 - t0} milliseconds</b>`)
+      $('.ms-index-time-performance').html(`<b>${t3 - t2} milliseconds</b>`)
+
+      $('.lunr-index-time-timestamps').html(`<b>${lunr_end - lunr_start} milliseconds</b>`)
+      $('.ms-index-time-timestamps').html(`<b>${ms_end - ms_start} milliseconds</b>`)
 
       var documenterSearchIndexDocs = await PreSearchIndex.getDocumenterSearchIndexDocs()
 
