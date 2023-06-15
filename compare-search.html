@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Compare Searches</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    />
+    <link href="assets/julia.ico" rel="icon" type="image/x-icon" />
+  </head>
+  <body>
+    <div class="mx-4 mt-2">
+      <div class="row">
+        <div class="col-6 border-end">
+          <h5 class="text-center">MinisearchJs</h5>
+          <div class="stats">
+            <div>
+              Time to instantiate using pre-built indexes:
+              <span class="ms-index-time"></span>
+            </div>
+            <div>Size of minisearch serialised index: <span class="ms-index-size"></span></div>
+            <input type="text" name="ms_input" id="ms_input" />
+            <br />
+            <br />
+            <small>
+              Minisearch returns good result object when compared to lunr, it returns the text
+              field, category and much more. For our purposes we will only print the location field.
+            </small>
+            <br />
+            <br />
+            <small>For the raw result Object see in "Console" in your Browser Devtools.</small>
+            <br />
+            <br />
+            <h4>
+              Search results: <span><b class="ms-result-count">0</b></span>
+            </h4>
+            <div>
+              <ul class="ms-results"></ul>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <h5 class="text-center">LunrJs</h5>
+          <div>
+            Time to instantiate using pre-built indexes:
+            <span class="lunr-index-time"></span>
+          </div>
+          <div>Size of lunr serialised index: <span class="lunr-index-size"></span></div>
+          <input type="text" name="lunr_input" id="lunr_input" />
+          <br />
+          <br />
+          <small>
+            As per the current configuration of documenter; Lunr doesn't give much info as to where
+            our search matched. For our purposes we will only print the ref field.
+          </small>
+          <br />
+          <br />
+          <small>For the raw result Object see in "Console" in your Browser Devtools.</small>
+          <br />
+          <br />
+          <h4>
+            Search results: <span><b class="lunr-result-count">0</b></span>
+          </h4>
+          <div>
+            <ul class="lunr-results"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script
+    src="https://code.jquery.com/jquery-3.7.0.min.js"
+    integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+    crossorigin="anonymous"
+  ></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.9/lunr.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/minisearch@6.1.0/dist/umd/index.min.js"></script>
+  <script>
+    // Create singleton Lunr instance
+    class PreSearchIndex {
+      static instance
+
+      static async createInstance(lunr) {
+        if (this.instance) {
+          return this.instance
+        }
+
+        try {
+          const response = await fetch('/assets/search_index.json')
+          const json = await response.json()
+          this.instance = lunr.Index.load(json)
+
+          console.log('Lunr instance created successfully from Pre-built index.')
+        } catch (error) {
+          console.error('Unable to create Lunr instance:', error)
+        }
+
+        return this.instance
+      }
+
+      static async getDocumenterSearchIndexDocs() {
+        try {
+          const response = await fetch('/assets/data.json')
+          const json = await response.json()
+          return json
+        } catch (error) {
+          console.error(error)
+        }
+      }
+    }
+
+    // Create singleton Minisearch instance
+    class PreSearchIndexMS {
+      static instance
+
+      static async createInstance(ms) {
+        if (this.instance) {
+          return this.instance
+        }
+
+        try {
+          const response = await fetch('/assets/search_index_ms.json')
+          const json = await response.text()
+          const stopWords = new Set([
+            'a',
+            'able',
+            'about',
+            'across',
+            'after',
+            'almost',
+            'also',
+            'am',
+            'among',
+            'an',
+            'and',
+            'are',
+            'as',
+            'at',
+            'be',
+            'because',
+            'been',
+            'but',
+            'by',
+            'can',
+            'cannot',
+            'could',
+            'dear',
+            'did',
+            'does',
+            'either',
+            'ever',
+            'every',
+            'from',
+            'got',
+            'had',
+            'has',
+            'have',
+            'he',
+            'her',
+            'hers',
+            'him',
+            'his',
+            'how',
+            'however',
+            'i',
+            'if',
+            'into',
+            'it',
+            'its',
+            'just',
+            'least',
+            'like',
+            'likely',
+            'may',
+            'me',
+            'might',
+            'most',
+            'must',
+            'my',
+            'neither',
+            'no',
+            'nor',
+            'not',
+            'of',
+            'off',
+            'often',
+            'on',
+            'or',
+            'other',
+            'our',
+            'own',
+            'rather',
+            'said',
+            'say',
+            'says',
+            'she',
+            'should',
+            'since',
+            'so',
+            'some',
+            'than',
+            'that',
+            'the',
+            'their',
+            'them',
+            'then',
+            'there',
+            'these',
+            'they',
+            'this',
+            'tis',
+            'to',
+            'too',
+            'twas',
+            'us',
+            'wants',
+            'was',
+            'we',
+            'were',
+            'what',
+            'when',
+            'who',
+            'whom',
+            'why',
+            'will',
+            'would',
+            'yet',
+            'you',
+            'your',
+          ])
+
+          this.instance = ms.loadJSON(json, {
+            fields: ['title', 'text'], // fields to index for full-text search
+            storeFields: ['location', 'title', 'text', 'category'], // fields to return with search results
+            tokenize: (string, _fieldName) => string.split(/[\s\-\.]+/),
+            processTerm: (term, _fieldName) => {
+              let word = stopWords.has(term) ? null : term.toLowerCase()
+              if (word) {
+                word = word.replace(/^[^a-zA-Z0-9@!]+/, '').replace(/[^a-zA-Z0-9@!]+$/, '')
+              }
+
+              return word ?? null
+            },
+            searchOptions: {
+              boost: { title: 100 },
+              fuzzy: 0.2,
+              tokenize: (string, _fieldName) => string.split(/[\s\-\.]+/),
+            },
+          })
+
+          console.log('MS instance created successfully from Pre-built index.')
+        } catch (error) {
+          console.error('Unable to create MS instance:', error)
+        }
+
+        return this.instance
+      }
+    }
+
+    $(async function () {
+      let lunr_timer = undefined
+      let ms_timer = undefined
+      let lunr_results = []
+      let ms_results = []
+
+      let lunr_request = $.ajax({
+        type: 'HEAD',
+        url: '/assets/search_index.json',
+        success: function () {
+          let size = lunr_request.getResponseHeader('Content-Length') / 1024 ** 2
+          $('.lunr-index-size').html(`<b>${size} MB</b>`)
+        },
+      })
+
+      let ms_request = $.ajax({
+        type: 'HEAD',
+        url: '/assets/search_index_ms.json',
+        success: function () {
+          let size = ms_request.getResponseHeader('Content-Length') / 1024 ** 2
+          $('.ms-index-size').html(`<b>${size} MB</b>`)
+        },
+      })
+
+      const t0 = performance.now()
+      var index = await PreSearchIndex.createInstance(lunr)
+      const t1 = performance.now()
+
+      const t2 = performance.now()
+      var index_ms = await PreSearchIndexMS.createInstance(MiniSearch)
+      const t3 = performance.now()
+
+      $('.lunr-index-time').html(`<b>${t1 - t0} milliseconds</b>`)
+      $('.ms-index-time').html(`<b>${t3 - t2} milliseconds</b>`)
+
+      var documenterSearchIndexDocs = await PreSearchIndex.getDocumenterSearchIndexDocs()
+
+      $(document).on('keyup', '#lunr_input', function (event) {
+        debounce_lunr(300)
+      })
+
+      function debounce_lunr(timeout = 300) {
+        clearTimeout(lunr_timer)
+        lunr_timer = setTimeout(() => update_search($('#lunr_input').val()), timeout)
+      }
+
+      $(document).on('keyup', '#ms_input', function (event) {
+        debounce_ms(300)
+      })
+
+      function debounce_ms(timeout = 300) {
+        clearTimeout(ms_timer)
+        ms_timer = setTimeout(() => update_search_ms($('#ms_input').val()), timeout)
+      }
+
+      function update_search(querystring) {
+        if (querystring.trim()) {
+          tokens = lunr.tokenizer(querystring)
+          lunr_results = index.query(function (q) {
+            tokens.forEach(function (t) {
+              q.term(t.toString(), {
+                fields: ['title'],
+                boost: 100,
+                usePipeline: true,
+                editDistance: 0,
+                wildcard: lunr.Query.wildcard.NONE,
+              })
+              q.term(t.toString(), {
+                fields: ['title'],
+                boost: 10,
+                usePipeline: true,
+                editDistance: 2,
+                wildcard: lunr.Query.wildcard.NONE,
+              })
+              q.term(t.toString(), {
+                fields: ['text'],
+                boost: 1,
+                usePipeline: true,
+                editDistance: 0,
+                wildcard: lunr.Query.wildcard.NONE,
+              })
+            })
+          })
+        }
+
+        console.log('Lunr result Object', lunr_results)
+
+        $('.lunr-result-count').html(lunr_results.length)
+
+        let lunr_string = ''
+
+        lunr_results.forEach((result) => {
+          lunr_string += `
+            <li class="mb-1">
+              <div>
+                <p class="m-0">Score: ${result.score}</p>
+                <p class="m-0">
+                  <a href='${result.ref}'>${result.ref}</a>
+                </p>
+              </div>
+            </li>
+          `
+        })
+
+        $('.lunr-results').html(lunr_string)
+      }
+
+      function update_search_ms(querystring) {
+        if (querystring.trim()) {
+          ms_results = index_ms.search(querystring)
+        }
+
+        console.log('Minisearch result Object', ms_results)
+
+        $('.ms-result-count').html(ms_results.length)
+
+        let ms_string = ''
+
+        ms_results.forEach((result) => {
+          ms_string += `
+            <li class="mb-1">
+              <div>
+                <p class="m-0">Score: ${result.score}</p>
+                <p class="m-0">
+                  <a href='${result.location}'>${result.location}</a>
+                </p>
+              </div>
+            </li>
+          `
+        })
+
+        $('.ms-results').html(ms_string)
+      }
+    })
+  </script>
+</html>

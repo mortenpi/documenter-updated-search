@@ -14,6 +14,7 @@ requirejs.config({
     'highlight-julia-repl':
       'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/julia-repl.min',
     lunr: 'https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.9/lunr.min',
+    minisearch: 'https://cdn.jsdelivr.net/npm/minisearch@6.1.0/dist/umd/index.min',
   },
   shim: {
     'highlight-julia': {
@@ -232,33 +233,43 @@ require([], function () {
 ////////////////////////////////////////////////////////////////////////////////
 
 require(['jquery'], function ($) {
+  let search_modal_header = `
+    <header class="modal-card-head">
+      <div class="field search-input-div">
+        <p class="control has-icons-right">
+          <input class="input documenter-search-input" type="text" placeholder="Search" />
+          <span class="icon is-small is-right has-text-primary-dark">
+            <i class="fas fa-magnifying-glass"></i>
+          </span>
+        </p>
+      </div>
+    </header>
+  `
+
+  let initial_search_body = `
+    <div class="has-text-centered my-5 py-5">No recent searches!</div>
+  `
+
+  let search_modal_footer = `
+    <footer class="modal-card-foot">
+      <span>
+        <kbd class="search-modal-key-hints">Ctrl</kbd> +
+        <kbd class="search-modal-key-hints">/</kbd> to search
+      </span>
+      <span class="ml-3"> <kbd class="search-modal-key-hints">esc</kbd> to close </span>
+    </footer>
+  `
+
   $(document.body).append(
     `
       <div class="modal" id="search-modal">
         <div class="modal-background"></div>
-        <div class="modal-card">
-          <header class="modal-card-head">
-            <div class="field" style="width: 100%">
-              <p class="control has-icons-right">
-                <input class="input documenter-search-input" type="text" placeholder="Search" />
-                <span class="icon is-small is-right has-text-primary-dark">
-                  <i class="fas fa-magnifying-glass"></i>
-                </span>
-              </p>
-            </div>
-          </header>
-          <section class="modal-card-body">
-            <div class="search-result-container">
-              <div class="has-text-centered m-5 p-5">No recent searches</div>
-            </div>
+        <div class="modal-card search-min-width-50">
+          ${search_modal_header}
+          <section class="modal-card-body search-modal-card-body">
+            ${initial_search_body}
           </section>
-          <footer class="modal-card-foot">
-            <span>
-              <kbd class="search-modal">Ctrl</kbd> + <kbd class="search-modal">/</kbd> to search
-            </span>
-            <span class="mx-3"> <kbd class="search-modal">&#9166;</kbd> to select </span>
-            <span> <kbd class="search-modal">esc</kbd> to close </span>
-          </footer>
+          ${search_modal_footer}
         </div>
       </div>
     `
@@ -288,14 +299,15 @@ require(['jquery'], function ($) {
 
   function closeModal() {
     let searchModal = document.querySelector('#search-modal')
+    let initial_search_body = `
+      <div class="has-text-centered my-5 py-5">No recent searches!</div>
+    `
 
     searchModal.classList.remove('is-active')
     document.querySelector('.documenter-search-input').blur()
 
     $('.documenter-search-input').val('')
-    $('.search-result-container').html(
-      `<div class="has-text-centered m-5 p-5">No recent searches</div>`
-    )
+    $('.search-modal-card-body').html(initial_search_body)
   }
 
   document.querySelector('#search-modal .modal-background').addEventListener('click', () => {
@@ -493,8 +505,156 @@ class PreSearchIndex {
   }
 }
 
+// Create singleton Minisearch instance
+class PreSearchIndexMS {
+  static instance
+
+  static async createInstance(ms) {
+    if (this.instance) {
+      return this.instance
+    }
+
+    try {
+      const response = await fetch('/assets/search_index_ms.json')
+      const json = await response.text()
+      const stopWords = new Set([
+        'a',
+        'able',
+        'about',
+        'across',
+        'after',
+        'almost',
+        'also',
+        'am',
+        'among',
+        'an',
+        'and',
+        'are',
+        'as',
+        'at',
+        'be',
+        'because',
+        'been',
+        'but',
+        'by',
+        'can',
+        'cannot',
+        'could',
+        'dear',
+        'did',
+        'does',
+        'either',
+        'ever',
+        'every',
+        'from',
+        'got',
+        'had',
+        'has',
+        'have',
+        'he',
+        'her',
+        'hers',
+        'him',
+        'his',
+        'how',
+        'however',
+        'i',
+        'if',
+        'into',
+        'it',
+        'its',
+        'just',
+        'least',
+        'like',
+        'likely',
+        'may',
+        'me',
+        'might',
+        'most',
+        'must',
+        'my',
+        'neither',
+        'no',
+        'nor',
+        'not',
+        'of',
+        'off',
+        'often',
+        'on',
+        'or',
+        'other',
+        'our',
+        'own',
+        'rather',
+        'said',
+        'say',
+        'says',
+        'she',
+        'should',
+        'since',
+        'so',
+        'some',
+        'than',
+        'that',
+        'the',
+        'their',
+        'them',
+        'then',
+        'there',
+        'these',
+        'they',
+        'this',
+        'tis',
+        'to',
+        'too',
+        'twas',
+        'us',
+        'wants',
+        'was',
+        'we',
+        'were',
+        'what',
+        'when',
+        'who',
+        'whom',
+        'why',
+        'will',
+        'would',
+        'yet',
+        'you',
+        'your',
+      ])
+
+      this.instance = ms.loadJSON(json, {
+        fields: ['title', 'text'], // fields to index for full-text search
+        storeFields: ['location', 'title', 'text', 'category'], // fields to return with search results
+        tokenize: (string, _fieldName) => string.split(/[\s\-\.]+/),
+        processTerm: (term, _fieldName) => {
+          let word = stopWords.has(term) ? null : term.toLowerCase()
+          if (word) {
+            word = word.replace(/^[^a-zA-Z0-9@!]+/, '').replace(/[^a-zA-Z0-9@!]+$/, '')
+          }
+
+          return word ?? null
+        },
+        searchOptions: {
+          boost: { title: 100 },
+          fuzzy: 0.2,
+          tokenize: (string, _fieldName) => string.split(/[\s\-\.]+/),
+        },
+      })
+
+      console.log('MS instance created successfully from Pre-built index.')
+    } catch (error) {
+      console.error('Unable to create MS instance:', error)
+    }
+
+    return this.instance
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
-require(['jquery', 'lunr'], function ($, lunr) {
+require(['jquery', 'lunr', 'minisearch'], function ($, lunr, minisearch) {
   $(async function () {
     let timer = undefined
     let results = undefined
@@ -509,18 +669,23 @@ require(['jquery', 'lunr'], function ($, lunr) {
     // console.log('')
 
     // console.time('with_prebuilt_index')
-    var index = await PreSearchIndex.createInstance(lunr)
+    // var index = await PreSearchIndex.createInstance(lunr)
     // console.timeEnd('with_prebuilt_index')
 
-    var documenterSearchIndexDocs = await PreSearchIndex.getDocumenterSearchIndexDocs()
+    // console.time('with_prebuilt_index_ms')
+    var index_ms = await PreSearchIndexMS.createInstance(minisearch)
+    // console.timeEnd('with_prebuilt_index_ms')
 
-    $(document).on('keyup', '.documenter-search-input', function () {
+    // var documenterSearchIndexDocs = await PreSearchIndex.getDocumenterSearchIndexDocs()
+
+    $(document).on('keyup', '.documenter-search-input', function (event) {
       debounce(300)
     })
 
     function debounce(timeout = 300) {
       clearTimeout(timer)
-      timer = setTimeout(update_search($('.documenter-search-input').val()), timeout)
+      // timer = setTimeout(() => update_search($('.documenter-search-input').val()), timeout)
+      timer = setTimeout(() => update_search_ms($('.documenter-search-input').val()), timeout)
     }
 
     function update_search(querystring) {
@@ -631,6 +796,142 @@ require(['jquery', 'lunr'], function ($, lunr) {
         )
       }
     }
+
+    function update_search_ms(querystring) {
+      let initial_search_body = `
+        <div class="has-text-centered my-5 py-5">No recent searches!</div>
+      `
+
+      if (querystring.trim()) {
+        results = index_ms.search(querystring)
+        if (results.length) {
+          results = results.filter((x) => x.score > 5)
+
+          let search_exact_matches_container = `
+            <div class="search-exact-matches-container">
+              <span class="is-size-6">Exact Matches:</span>
+          `
+          let exact_matches = results.slice(0, 5)
+
+          let exact_match_string = ''
+          exact_matches.forEach((match) => {
+            exact_match_string += `
+              <a href="${match.location ?? '#'}" class="search-exact-matches-result">
+                <span>${match.title ?? ''}</span>
+              </a>
+            `
+          })
+
+          results = results.slice(5)
+
+          search_exact_matches_container += exact_match_string + `</div>`
+
+          let searchData = results.map(function (result) {
+            let textindex = new RegExp(`\\b${querystring}\\b`, 'i').exec(result.text)
+            let text =
+              textindex !== null
+                ? result.text.slice(
+                    Math.max(textindex.index - 100, 0),
+                    Math.min(textindex.index + querystring.length + 100, result.text.length)
+                  )
+                : ''
+
+            return {
+              score: result.score,
+              location: result.location,
+              title: result.title,
+              text: text.length
+                ? '...' +
+                  text.replace(
+                    // new RegExp(`\\b${querystring}\\b`, 'gi'), // For all occurences
+                    new RegExp(`\\b${querystring}\\b`, 'i'), // For first occurence
+                    '<span class="search-result-highlight">$&</span>'
+                  ) +
+                  '...'
+                : '',
+              category: result.category,
+            }
+          })
+
+          let newSearchData = {}
+
+          // Start from group by category
+          searchData.forEach((element) => {
+            if (newSearchData.hasOwnProperty(element.category)) {
+              newSearchData[element.category].push(element)
+            } else {
+              newSearchData[element.category] = [element]
+            }
+          })
+
+          if (newSearchData.hasOwnProperty('page') && newSearchData.hasOwnProperty('section')) {
+            newSearchData['page'].push(...newSearchData['section'])
+            newSearchData['page'].sort((a, b) => b.score - a.score)
+            delete newSearchData['section']
+          }
+
+          let search_result_container = `
+            ${search_exact_matches_container}
+            <div class="search-divider"></div>
+            <div class="search-result-container">
+            <div class="is-size-6">Total results: ${searchData.length}</div>
+          `
+
+          let type_string = ''
+
+          Object.keys(newSearchData).forEach((type) => {
+            type_string += `
+              <div class="type-container">
+                <div class="property-search-result-container">
+                  <i class="fas fa-chevron-down is-size-7 property-indicator"></i>
+                  <p class="is-size-5">${type.charAt(0).toUpperCase() + type.slice(1)}</p>
+                </div>
+
+                <div class="property-results-container mt-1 ml-5 pl-3">
+            `
+
+            newSearchData[type].forEach((result) => {
+              type_string += `
+                <a href="${result.location ?? ''}" class="is-link search-result-link">
+                  <div class="property-search-result">
+                    <div class="property-search-result-badge">${result.title ?? ''}</div>
+                    ${result.text ? `<p>${result.text}</p>` : ''}
+                  </div>
+                </a>
+              `
+            })
+
+            type_string += `</div></div>`
+          })
+
+          search_result_container += type_string + `</div>`
+
+          $('.search-modal-card-body').html(search_result_container)
+        } else {
+          $('.search-modal-card-body').html(initial_search_body)
+        }
+      } else {
+        $('.search-modal-card-body').html(initial_search_body)
+      }
+    }
+  })
+})
+
+require(['jquery'], function ($) {
+  $(document).on('click', '.property-search-result-container', function () {
+    if ($(this).siblings('.property-results-container').is(':visible')) {
+      $(this)
+        .find('.property-indicator')
+        .removeClass('fa-chevron-down')
+        .addClass('fa-chevron-right')
+    } else {
+      $(this)
+        .find('.property-indicator')
+        .removeClass('fa-chevron-right')
+        .addClass('fa-chevron-down')
+    }
+
+    $(this).siblings('.property-results-container').slideToggle()
   })
 })
 
