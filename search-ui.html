@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search UIs</title>
+    <link href="assets/julia.ico" rel="icon" type="image/x-icon" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.048/juliamono.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/fontawesome.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/solid.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/brands.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      class="docs-theme-link"
+      rel="stylesheet"
+      type="text/css"
+      href="assets/themes/documenter-dark.css"
+      data-theme-name="documenter-dark"
+      data-theme-primary-dark
+    />
+    <link
+      class="docs-theme-link"
+      rel="stylesheet"
+      type="text/css"
+      href="assets/themes/documenter-light.css"
+      data-theme-name="documenter-light"
+      data-theme-primary
+    />
+    <style>
+      .modal {
+        position: unset;
+        max-height: 500px;
+      }
+
+      .modal-card {
+        border: 1px solid black;
+      }
+
+      .no-scale:hover {
+        scale: 1;
+      }
+
+      .gap-4 {
+        gap: 1rem;
+      }
+
+      .gap-8 {
+        gap: 2rem;
+      }
+
+      .w-100 {
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      class="is-flex is-flex-wrap-wrap is-justify-content-center is-align-items-center gap-8 p-5 m-5"
+    >
+      <div>
+        <p>1. Current Search</p>
+        <div class="modal is-active" id="search-modal">
+          <div class="modal-card">
+            <header class="modal-card-head">
+              <div class="field search-input-div">
+                <p class="control has-icons-right">
+                  <input class="input documenter-search-input" type="text" placeholder="Search" />
+                  <span class="icon is-small is-right has-text-primary-dark">
+                    <i class="fas fa-magnifying-glass"></i>
+                  </span>
+                </p>
+              </div>
+            </header>
+            <section class="modal-card-body search-modal-card-body">
+              <div class="search-exact-matches-container">
+                <span class="is-size-6">Exact Matches:</span>
+                <a href="#" class="search-exact-matches-result">
+                  <span>Lorem, ipsum dolor.</span>
+                </a>
+                <a href="#" class="search-exact-matches-result">
+                  <span>Lorem, ipsum dolor.</span>
+                </a>
+                <a href="#" class="search-exact-matches-result">
+                  <span>Lorem, ipsum dolor.</span>
+                </a>
+                <a href="#" class="search-exact-matches-result">
+                  <span>Lorem, ipsum dolor.</span>
+                </a>
+                <a href="#" class="search-exact-matches-result">
+                  <span>Lorem, ipsum dolor.</span>
+                </a>
+              </div>
+              <div class="search-divider"></div>
+              <div class="search-result-container">
+                <div class="is-size-6">Total results: 100</div>
+
+                <div class="type-container">
+                  <div class="property-search-result-container">
+                    <i class="fas fa-chevron-down is-size-7 property-indicator"></i>
+                    <p class="is-size-5">Type</p>
+                  </div>
+                  <div class="property-results-container mt-1 ml-5 pl-3">
+                    <a href="#" class="is-link search-result-link">
+                      <div class="property-search-result">
+                        <div class="property-search-result-badge">Base.Matrix</div>
+                      </div>
+                    </a>
+                    <a href="#" class="is-link search-result-link">
+                      <div class="property-search-result">
+                        <div class="property-search-result-badge">Base.Matrix</div>
+                        <p>
+                          ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                          AbstractMatrix{T} Two-dimensional dense array with elements of type T,
+                          often used to represe...
+                        </p>
+                      </div>
+                    </a>
+                    <a href="#" class="is-link search-result-link">
+                      <div class="property-search-result">
+                        <div class="property-search-result-badge">Base.Matrix</div>
+                        <p>
+                          ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                          AbstractMatrix{T} Two-dimensional dense array with elements of type T,
+                          often used to represe...
+                        </p>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+                <div class="type-container">
+                  <div class="property-search-result-container">
+                    <i class="fas fa-chevron-down is-size-7 property-indicator"></i>
+                    <p class="is-size-5">Function</p>
+                  </div>
+                  <div class="property-results-container mt-1 ml-5 pl-3">
+                    <a href="#" class="is-link search-result-link">
+                      <div class="property-search-result">
+                        <div class="property-search-result-badge">Base.Matrix</div>
+                        <p>
+                          ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                          AbstractMatrix{T} Two-dimensional dense array with elements of type T,
+                          often used to represe...
+                        </p>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <footer class="modal-card-foot">
+              <span>
+                <kbd class="search-modal-key-hints">Ctrl</kbd> +
+                <kbd class="search-modal-key-hints">/</kbd> to search
+              </span>
+              <span class="ml-3"> <kbd class="search-modal-key-hints">esc</kbd> to close </span>
+            </footer>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p>2. Simple Search</p>
+        <div class="modal is-active" id="search-modal">
+          <div class="modal-card">
+            <header class="modal-card-head">
+              <div class="field search-input-div">
+                <p class="control has-icons-right">
+                  <input class="input documenter-search-input" type="text" placeholder="Search" />
+                  <span class="icon is-small is-right has-text-primary-dark">
+                    <i class="fas fa-magnifying-glass"></i>
+                  </span>
+                </p>
+              </div>
+            </header>
+
+            <section class="modal-card-body search-modal-card-body">
+              <div class="search-result-container">
+                <div class="is-size-6">Total results: 100</div>
+
+                <a href="#" class="is-link search-result-link no-scale">
+                  <div class="property-search-result">
+                    <div class="">Base.Matrix</div>
+                  </div>
+                </a>
+                <a href="#" class="is-link search-result-link no-scale">
+                  <p>
+                    ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                    AbstractMatrix{T} Two-dimensional dense array with elements of type T, often
+                    used to represe...
+                  </p>
+                </a>
+                <a href="#" class="is-link search-result-link no-scale">
+                  <p>
+                    ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                    AbstractMatrix{T} Two-dimensional dense array with elements of type T, often
+                    used to represe...
+                  </p>
+                </a>
+                <a href="#" class="is-link search-result-link no-scale">
+                  <div class="property-search-result">
+                    <div class="">Base.Matrix</div>
+                  </div>
+                </a>
+                <a href="#" class="is-link search-result-link no-scale">
+                  <p>
+                    ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                    AbstractMatrix{T} Two-dimensional dense array with elements of type T, often
+                    used to represe...
+                  </p>
+                </a>
+              </div>
+            </section>
+
+            <footer class="modal-card-foot">
+              <span>
+                <kbd class="search-modal-key-hints">Ctrl</kbd> +
+                <kbd class="search-modal-key-hints">/</kbd> to search
+              </span>
+              <span class="ml-3"> <kbd class="search-modal-key-hints">esc</kbd> to close </span>
+            </footer>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p>3. Simple Search with Title Badges and Context</p>
+        <div class="modal is-active" id="search-modal">
+          <div class="modal-card">
+            <header class="modal-card-head">
+              <div class="field search-input-div">
+                <p class="control has-icons-right">
+                  <input class="input documenter-search-input" type="text" placeholder="Search" />
+                  <span class="icon is-small is-right has-text-primary-dark">
+                    <i class="fas fa-magnifying-glass"></i>
+                  </span>
+                </p>
+              </div>
+            </header>
+
+            <section class="modal-card-body search-modal-card-body">
+              <div class="search-result-container">
+                <div class="is-size-6">Total results: 100</div>
+
+                <a href="#" class="is-link search-result-link no-scale">
+                  <div class="property-search-result">
+                    <div class="property-search-result-badge">Base.Matrix</div>
+                  </div>
+                </a>
+                <a href="#" class="is-link search-result-link no-scale">
+                  <div class="property-search-result">
+                    <div class="property-search-result-badge">Base.Matrix</div>
+                    <p>
+                      ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                      AbstractMatrix{T} Two-dimensional dense array with elements of type T, often
+                      used to represe...
+                    </p>
+                  </div>
+                </a>
+                <a href="#" class="is-link search-result-link no-scale">
+                  <div class="property-search-result">
+                    <div class="property-search-result-badge">Base.Matrix</div>
+                  </div>
+                </a>
+                <a href="#" class="is-link search-result-link no-scale">
+                  <div class="property-search-result">
+                    <div class="property-search-result-badge">Base.Matrix</div>
+                    <p>
+                      ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                      AbstractMatrix{T} Two-dimensional dense array with elements of type T, often
+                      used to represe...
+                    </p>
+                  </div>
+                </a>
+                <a href="#" class="is-link search-result-link no-scale">
+                  <div class="property-search-result">
+                    <div class="property-search-result-badge">Base.Matrix</div>
+                    <p>
+                      ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                      AbstractMatrix{T} Two-dimensional dense array with elements of type T, often
+                      used to represe...
+                    </p>
+                  </div>
+                </a>
+              </div>
+            </section>
+
+            <footer class="modal-card-foot">
+              <span>
+                <kbd class="search-modal-key-hints">Ctrl</kbd> +
+                <kbd class="search-modal-key-hints">/</kbd> to search
+              </span>
+              <span class="ml-3"> <kbd class="search-modal-key-hints">esc</kbd> to close </span>
+            </footer>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p>4. Search with filter badges</p>
+        <div class="modal is-active" id="search-modal">
+          <div class="modal-card">
+            <header class="modal-card-head">
+              <div class="field search-input-div">
+                <p class="control has-icons-right">
+                  <input class="input documenter-search-input" type="text" placeholder="Search" />
+                  <span class="icon is-small is-right has-text-primary-dark">
+                    <i class="fas fa-magnifying-glass"></i>
+                  </span>
+                </p>
+              </div>
+            </header>
+
+            <section class="modal-card-body search-modal-card-body">
+              <div class="search-exact-matches-container">
+                <span class="is-size-6">Filters:</span>
+                <a
+                  href="#"
+                  class="search-exact-matches-result no-scale"
+                  style="background-color: #f5f5f5; color: black !important"
+                >
+                  <span>All</span>
+                </a>
+                <a href="#" class="search-exact-matches-result no-scale">
+                  <span>Type</span>
+                </a>
+                <a href="#" class="search-exact-matches-result no-scale">
+                  <span>Function</span>
+                </a>
+                <a
+                  href="#"
+                  class="search-exact-matches-result no-scale"
+                  style="background-color: #f5f5f5; color: black !important"
+                >
+                  <span>Method</span>
+                </a>
+                <a
+                  href="#"
+                  class="search-exact-matches-result no-scale"
+                  style="background-color: #f5f5f5; color: black !important"
+                >
+                  <span>Page</span>
+                </a>
+              </div>
+              <div class="search-divider"></div>
+              <div class="search-result-container">
+                <div class="is-size-6">Total results: 100</div>
+
+                <div class="type-container">
+                  <div class="">
+                    <p class="is-size-5">Type</p>
+                  </div>
+                  <div class="property-results-container mt-1 ml-5 pl-3">
+                    <a href="#" class="is-link search-result-link no-scale">
+                      <div class="property-search-result">
+                        <div class="property-search-result-badge">Base.Matrix</div>
+                      </div>
+                    </a>
+                    <a href="#" class="is-link search-result-link no-scale">
+                      <div class="property-search-result">
+                        <div class="property-search-result-badge">Base.Matrix</div>
+                        <p>
+                          ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                          AbstractMatrix{T} Two-dimensional dense array with elements of type T,
+                          often used to represe...
+                        </p>
+                      </div>
+                    </a>
+                    <a href="#" class="is-link search-result-link no-scale">
+                      <div class="property-search-result">
+                        <div class="property-search-result-badge">Base.Matrix</div>
+                        <p>
+                          ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                          AbstractMatrix{T} Two-dimensional dense array with elements of type T,
+                          often used to represe...
+                        </p>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+                <div class="type-container">
+                  <div class="">
+                    <p class="is-size-5">Function</p>
+                  </div>
+                  <div class="property-results-container mt-1 ml-5 pl-3">
+                    <a href="#" class="is-link search-result-link">
+                      <div class="property-search-result">
+                        <div class="property-search-result-badge">Base.Matrix</div>
+                        <p>
+                          ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                          AbstractMatrix{T} Two-dimensional dense array with elements of type T,
+                          often used to represe...
+                        </p>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <footer class="modal-card-foot">
+              <span>
+                <kbd class="search-modal-key-hints">Ctrl</kbd> +
+                <kbd class="search-modal-key-hints">/</kbd> to search
+              </span>
+              <span class="ml-3"> <kbd class="search-modal-key-hints">esc</kbd> to close </span>
+            </footer>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p>5. Search with Panels/Tabs for different category</p>
+        <div class="modal is-active" id="search-modal">
+          <div class="modal-card">
+            <header class="modal-card-head">
+              <div class="field search-input-div">
+                <p class="control has-icons-right">
+                  <input class="input documenter-search-input" type="text" placeholder="Search" />
+                  <span class="icon is-small is-right has-text-primary-dark">
+                    <i class="fas fa-magnifying-glass"></i>
+                  </span>
+                </p>
+              </div>
+            </header>
+
+            <section class="modal-card-body search-modal-card-body">
+              <p class="panel-tabs is-justify-content-space-between">
+                <a style="border-bottom: none">All</a>
+                <a style="border-bottom: none">Type</a>
+                <a class="is-active" style="border-bottom: none">Function</a>
+                <a style="border-bottom: none">Page</a>
+              </p>
+
+              <div class="is-size-6">Total results: 100</div>
+
+              <div class="type-container">
+                <div class="property-results-container mt-1" style="border-left: none">
+                  <a href="#" class="is-link search-result-link no-scale">
+                    <div class="property-search-result">
+                      <div class="property-search-result-badge">Base.Matrix</div>
+                      <p>
+                        ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                        AbstractMatrix{T} Two-dimensional dense array with elements of type T, often
+                        used to represe...
+                      </p>
+                    </div>
+                  </a>
+                  <a href="#" class="is-link search-result-link no-scale">
+                    <div class="property-search-result">
+                      <div class="property-search-result-badge">Base.Matrix</div>
+                    </div>
+                  </a>
+                  <a href="#" class="is-link search-result-link no-scale">
+                    <div class="property-search-result">
+                      <div class="property-search-result-badge">Base.Matrix</div>
+                      <p>
+                        ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                        AbstractMatrix{T} Two-dimensional dense array with elements of type T, often
+                        used to represe...
+                      </p>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </section>
+
+            <footer class="modal-card-foot">
+              <span>
+                <kbd class="search-modal-key-hints">Ctrl</kbd> +
+                <kbd class="search-modal-key-hints">/</kbd> to search
+              </span>
+              <span class="ml-3"> <kbd class="search-modal-key-hints">esc</kbd> to close </span>
+            </footer>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p>6. Search with Category badges</p>
+        <div class="modal is-active" id="search-modal">
+          <div class="modal-card">
+            <header class="modal-card-head">
+              <div class="field search-input-div">
+                <p class="control has-icons-right">
+                  <input class="input documenter-search-input" type="text" placeholder="Search" />
+                  <span class="icon is-small is-right has-text-primary-dark">
+                    <i class="fas fa-magnifying-glass"></i>
+                  </span>
+                </p>
+              </div>
+            </header>
+
+            <section class="modal-card-body search-modal-card-body">
+              <div class="search-result-container">
+                <div class="is-size-6">Total results: 100</div>
+
+                <div class="property-results-container mt-1" style="border-left: none">
+                  <a href="#" class="is-link search-result-link no-scale">
+                    <div class="property-search-result">
+                      <div class="property-search-result-badge">Type</div>
+                      <div class="">Base.Matrix</div>
+                    </div>
+                  </a>
+                  <a href="#" class="is-link search-result-link no-scale">
+                    <div class="property-search-result">
+                      <div class="property-search-result-badge">Type</div>
+                      <p>
+                        ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                        AbstractMatrix{T} Two-dimensional dense array with elements of type T, often
+                        used to represe...
+                      </p>
+                    </div>
+                  </a>
+                  <a href="#" class="is-link search-result-link no-scale">
+                    <div class="property-search-result">
+                      <div class="property-search-result-badge">Section</div>
+                      <p>
+                        ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                        AbstractMatrix{T} Two-dimensional dense array with elements of type T, often
+                        used to represe...
+                      </p>
+                    </div>
+                  </a>
+                </div>
+                <div class="property-results-container mt-1" style="border-left: none">
+                  <a href="#" class="is-link search-result-link no-scale">
+                    <div class="property-search-result">
+                      <div class="property-search-result-badge">Function</div>
+                      <div class="">Base.Matrix</div>
+                    </div>
+                  </a>
+                  <a href="#" class="is-link search-result-link no-scale">
+                    <div class="property-search-result">
+                      <div class="property-search-result-badge">Page</div>
+                      <p>
+                        ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                        AbstractMatrix{T} Two-dimensional dense array with elements of type T, often
+                        used to represe...
+                      </p>
+                    </div>
+                  </a>
+                  <a href="#" class="is-link search-result-link no-scale">
+                    <div class="property-search-result">
+                      <div class="property-search-result-badge">Method</div>
+                      <p>
+                        ...<span class="search-result-highlight">Matrix</span>{T} &lt;:
+                        AbstractMatrix{T} Two-dimensional dense array with elements of type T, often
+                        used to represe...
+                      </p>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </section>
+
+            <footer class="modal-card-foot">
+              <span>
+                <kbd class="search-modal-key-hints">Ctrl</kbd> +
+                <kbd class="search-modal-key-hints">/</kbd> to search
+              </span>
+              <span class="ml-3"> <kbd class="search-modal-key-hints">esc</kbd> to close </span>
+            </footer>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script
+    src="https://code.jquery.com/jquery-3.7.0.min.js"
+    integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+    crossorigin="anonymous"
+  ></script>
+  <script>
+    $(function () {
+      $(document).on('click', '.property-search-result-container', function () {
+        if ($(this).siblings('.property-results-container').is(':visible')) {
+          $(this)
+            .find('.property-indicator')
+            .removeClass('fa-chevron-down')
+            .addClass('fa-chevron-right')
+        } else {
+          $(this)
+            .find('.property-indicator')
+            .removeClass('fa-chevron-right')
+            .addClass('fa-chevron-down')
+        }
+
+        $(this).siblings('.property-results-container').slideToggle()
+      })
+    })
+  </script>
+</html>
