@@ -11,6 +11,7 @@
     <link href="assets/julia.ico" rel="icon" type="image/x-icon" />
   </head>
   <body>
+    <input type="text" name="shared-input" class="w-100 mt-4" id="shared-input" />
     <div class="mx-4 mt-2">
       <div class="row">
         <div class="col-6 border-end">
@@ -28,7 +29,7 @@
               Size of minisearch serialised index (Transferred over network):
               <span class="ms-index-size"></span>
             </div>
-            <input type="text" name="ms_input" class="w-100 mt-4" id="ms_input" />
+            <!-- <input type="text" name="ms_input" class="w-100 mt-4" id="ms_input" /> -->
             <small class="mt-4">
               Minisearch returns good result object when compared to lunr, it returns the text
               field, category and much more. For our purposes we will only print the location field.
@@ -58,7 +59,7 @@
             Size of lunr serialised index (Transferred over network):
             <span class="lunr-index-size"></span>
           </div>
-          <input type="text" name="lunr_input" class="w-100 mt-4" id="lunr_input" />
+          <!-- <input type="text" name="lunr_input" class="w-100 mt-4" id="lunr_input" /> -->
           <small class="mt-4">
             As per the current configuration of documenter; Lunr doesn't give much info as to where
             our search matched. For our purposes we will only print the ref field.
@@ -94,7 +95,7 @@
         }
 
         try {
-          const response = await fetch('/assets/search_index.json')
+          const response = await fetch('assets/search_index.json')
           const json = await response.json()
           this.instance = lunr.Index.load(json)
 
@@ -108,7 +109,7 @@
 
       static async getDocumenterSearchIndexDocs() {
         try {
-          const response = await fetch('/assets/data.json')
+          const response = await fetch('assets/data.json')
           const json = await response.json()
           return json
         } catch (error) {
@@ -127,7 +128,7 @@
         }
 
         try {
-          const response = await fetch('/assets/search_index_ms.json')
+          const response = await fetch('assets/search_index_ms.json')
           const json = await response.text()
           const stopWords = new Set([
             'a',
@@ -273,7 +274,7 @@
 
       let lunr_request = $.ajax({
         type: 'HEAD',
-        url: '/assets/search_index.json',
+        url: 'assets/search_index.json',
         success: function () {
           let size = lunr_request.getResponseHeader('Content-Length') / 1024 ** 2
           $('.lunr-index-size').html(`<b>${size} MB</b>`)
@@ -282,7 +283,7 @@
 
       let ms_request = $.ajax({
         type: 'HEAD',
-        url: '/assets/search_index_ms.json',
+        url: 'assets/search_index_ms.json',
         success: function () {
           let size = ms_request.getResponseHeader('Content-Length') / 1024 ** 2
           $('.ms-index-size').html(`<b>${size} MB</b>`)
@@ -309,22 +310,22 @@
 
       var documenterSearchIndexDocs = await PreSearchIndex.getDocumenterSearchIndexDocs()
 
-      $(document).on('keyup', '#lunr_input', function (event) {
+      $(document).on('keyup', '#shared-input', function (event) {
         debounce_lunr(300)
       })
 
       function debounce_lunr(timeout = 300) {
         clearTimeout(lunr_timer)
-        lunr_timer = setTimeout(() => update_search($('#lunr_input').val()), timeout)
+        lunr_timer = setTimeout(() => update_search($('#shared-input').val()), timeout)
       }
 
-      $(document).on('keyup', '#ms_input', function (event) {
+      $(document).on('keyup', '#shared-input', function (event) {
         debounce_ms(300)
       })
 
       function debounce_ms(timeout = 300) {
         clearTimeout(ms_timer)
-        ms_timer = setTimeout(() => update_search_ms($('#ms_input').val()), timeout)
+        ms_timer = setTimeout(() => update_search_ms($('#shared-input').val()), timeout)
       }
 
       function update_search(querystring) {
